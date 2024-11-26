@@ -13,6 +13,13 @@ let playStartTime = -1;
 let playStartTimeInScript = -1;
 let playScriptTimeout = -1;
 
+//Флаг для использования нужного метода
+let oscilate = false;
+const oscilateOption = process.argv.indexOf('-o');
+
+if (oscilateOption > -1)
+    oscilate = true;
+
 // Websocket
 let socket = new W3CWebSocket("ws://localhost:12345");
 
@@ -155,23 +162,64 @@ setInterval(() => {
         let duration = nextPosition.time - currentScriptTime;
 
         let messageId = getNextMessageId();
-        let linearCmdMessage = [
-            {
-                "LinearCmd": {
-                    "Id": messageId,
-                    "DeviceIndex": 0,
-                    "Vectors": [
-                        {
-                            "Index": 0,
-                            "Duration": duration,
-                            "Position": nextPosition.position
-                        }
-                    ]
-                }
-            }
-        ]
 
-        sendSocketMessage(linearCmdMessage, messageId);
+        let cmdMessage;
+
+        if(oscilate === true)
+        {
+            cmdMessage = [
+                {
+                    "ScalarCmd":{
+                        "Id":messageId,
+                        "DeviceIndex":DeviceIndex,
+                        "Scalars": [
+                            {
+                                "Index": 0,                     //Индекс привода (Можно посмотреть в Intiface Desctop, должен быть равен нулю)
+                                "Scalar": 1,                    //Уровень от 0.0 до 1.0 пока единица для теста. При запуске должен начать хуярить на масимальной скорости
+                                "ActuatorType": "Oscillate"     //Строка, указывающая тип актуатора, указывать не обязательно
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        else
+        {
+            cmdMessage = [
+                {
+                    "LinearCmd": {
+                        "Id": messageId,
+                        "DeviceIndex": deviceIndex,
+                        "Vectors": [
+                            {
+                                "Index": 0,
+                                "Duration": duration,
+                                "Position": nextPosition.position
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        
+        //Оригинальный код отправки пакета
+        // let linearCmdMessage = [
+        //     {
+        //         "LinearCmd": {
+        //             "Id": messageId,
+        //             "DeviceIndex": 0,
+        //             "Vectors": [
+        //                 {
+        //                     "Index": 0,
+        //                     "Duration": duration,
+        //                     "Position": nextPosition.position
+        //                 }
+        //             ]
+        //         }
+        //     }
+        // ]
+        console.log(nextPosition.position);
+        sendSocketMessage(cmdMessage, messageId);
     }
 
     lastTimestamp = currentTimestamp;

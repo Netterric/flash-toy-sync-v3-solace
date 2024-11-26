@@ -202,22 +202,6 @@ setInterval(() => {
             ]
         }
         
-        //Оригинальный код отправки пакета
-        // let linearCmdMessage = [
-        //     {
-        //         "LinearCmd": {
-        //             "Id": messageId,
-        //             "DeviceIndex": 0,
-        //             "Vectors": [
-        //                 {
-        //                     "Index": 0,
-        //                     "Duration": duration,
-        //                     "Position": nextPosition.position
-        //                 }
-        //             ]
-        //         }
-        //     }
-        // ]
         console.log(nextPosition.position);
         sendSocketMessage(cmdMessage, messageId);
     }
